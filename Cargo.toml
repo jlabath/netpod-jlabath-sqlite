@@ -1,0 +1,11 @@
+[package]
+name = "netpod-jlabath-sqlite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.92"
+bendy = { version = "0.3.3", features = [] }
+rusqlite = "0.32.1"
+serde_json = "1.0.132"
+
