@@ -120,7 +120,7 @@ fn handle_describe() -> Result<Response> {
 
 fn do_query(db_name: Arc<Result<String>>, lock: Arc<RwLock<()>>, args: String) -> Result<Vec<u8>> {
     let decoded_args: Vec<String> = serde_json::from_str(&args)?;
-    let query = decoded_args.get(0).ok_or(anyhow!("no query arg given"))?;
+    let query = decoded_args.first().ok_or(anyhow!("no query arg given"))?;
     let name = match &*db_name {
         Ok(name) => Ok(name),
         Err(e) => Err(anyhow::Error::msg(e.to_string())),
@@ -128,7 +128,7 @@ fn do_query(db_name: Arc<Result<String>>, lock: Arc<RwLock<()>>, args: String) -
 
     let _guard = lock.read().map_err(|e| anyhow::Error::msg(e.to_string()))?;
     let conn = Connection::open(name)?;
-    let mut stmt = conn.prepare(&query)?;
+    let mut stmt = conn.prepare(query)?;
     let mut rows = stmt.query([])?;
     let mut col_count: usize = 1000000;
     let mut response: Vec<JsonValue> = Vec::new();
@@ -160,7 +160,7 @@ fn do_query(db_name: Arc<Result<String>>, lock: Arc<RwLock<()>>, args: String) -
 
 fn do_exec(db_name: Arc<Result<String>>, lock: Arc<RwLock<()>>, args: String) -> Result<Vec<u8>> {
     let decoded_args: Vec<String> = serde_json::from_str(&args)?;
-    let sql = decoded_args.get(0).ok_or(anyhow!("no sql arg given"))?;
+    let sql = decoded_args.first().ok_or(anyhow!("no sql arg given"))?;
     let name = match &*db_name {
         Ok(name) => Ok(name),
         Err(e) => Err(anyhow::Error::msg(e.to_string())),
@@ -169,7 +169,7 @@ fn do_exec(db_name: Arc<Result<String>>, lock: Arc<RwLock<()>>, args: String) ->
         .write()
         .map_err(|e| anyhow::Error::msg(e.to_string()))?;
     let conn = Connection::open(name)?;
-    let mut stmt = conn.prepare(&sql)?;
+    let mut stmt = conn.prepare(sql)?;
     let row_changed = stmt.execute(())?;
     Ok(JsonValue::Number(row_changed.into())
         .to_string()
